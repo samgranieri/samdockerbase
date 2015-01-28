@@ -1,15 +1,36 @@
 FROM phusion/baseimage:0.9.16
 # Update everything and install what I need for rails
 RUN apt-get update -qq && \
-    apt-get install -y \
+  apt-get upgrade -y
+
+RUN apt-get install -y \
+  curl \
+  #python-software-properties \
+  #software-properties-common \
+  wget
+
+# time to get the latest nodejs
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys \
+  C3173AA6 \
+  561F9B9CAC40B2F7
+# install the latest ruby packages -- no need to fool around with rbenv
+# time to get the latest postgresql client 
+# Install NodeJS
+RUN apt-add-repository ppa:brightbox/ruby-ng && \
+  wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - && \
+  sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+  curl -sL https://deb.nodesource.com/setup | bash -
+
+RUN apt-get install -y \
+      aptitude \
       bison \
       build-essential \
       ca-certificates \
-      curl \
       git-core \
       imagemagick \
       libffi-dev \
       libgdbm-dev \
+      libmysqlclient-dev \
       libncurses5-dev \
       libpq-dev \
       libreadline6-dev \
@@ -17,48 +38,23 @@ RUN apt-get update -qq && \
       libxml2-dev \
       libxslt-dev \
       libyaml-dev \
-      nginx \
+      mysql-client \
+      nodejs \
       openssl \
-      python-software-properties \
-      software-properties-common \
+      postgresql-client-9.4 \
+      ruby2.2 \
+      ruby2.2-dev \
       unzip \
       zlib1g-dev
-# time to get brightbox ruby and oracle java 8
-RUN apt-add-repository ppa:brightbox/ruby-ng
-RUN add-apt-repository ppa:webupd8team/java
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys \
-C3173AA6 561F9B9CAC40B2F7
-# time to get the latest nodejs
-RUN apt-get update -qq
-RUN curl -sL https://deb.nodesource.com/setup | sudo bash -
-RUN apt-get install nodejs -y
-RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 
-# install the latest ruby and a lot of gems
-RUN apt-get install -y ruby2.2 aptitude ruby2.2-dev
-RUN gem update --no-ri --no-rdoc
-RUN gem install rails pg sidekiq unicorn puma --no-ri --no-rdoc
-RUN gem install --no-ri --no-rdoc \
-  sass-rails\
-  haml-rails\
-  kaminari\
-  rspec-rails\
-  mongoid\
-  html2haml\
-  carrierwave\
-  dotenv\
-  pry\
-  awesome_print\
-  guard\
-  devise\
-  cancancan\
-  draper\
-  quiet_assets\
-  high_voltage\
-  rails_layout\
-  autoprefixer-rails\
-  simple_form\
-  bootstrap-sass\
-  font-awesome-sass
-RUN apt-get install -y mysql-client libmysqlclient-dev
-RUN gem install --no-ri --no-rdoc mysql2
+
+#if you need java
+#RUN add-apt-repository ppa:webupd8team/java
+#RUN apt-get update
+#RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+#RUN apt-get install -y --no-install-recommends oracle-java8-installer
+#RUN apt-get install -y --no-install-recommends \
+#  nginx
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
